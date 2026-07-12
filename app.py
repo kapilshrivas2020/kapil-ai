@@ -10,17 +10,24 @@ load_dotenv(override=True)
 
 MODEL_NAME = "gemini-3.1-flash-lite"
 
-# grok_api_key = os.getenv('GROK_API_KEY')
-# GROK_BASE_URL = "https://api.x.ai/v1"
-# grok = OpenAI(api_key=grok_api_key, base_url=GROK_BASE_URL)
+for _key in ("GOOGLE_API_KEY", "GEMINI_API_KEY"):
+    if os.environ.get(_key) is not None:
+        os.environ[_key] = os.environ[_key].strip()
 
-# groq_api_key = os.getenv('GROQ_API_KEY')
-# GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-# groq = OpenAI(api_key=groq_api_key, base_url=GROQ_BASE_URL)
 
-# openai = OpenAI()
+def _api_key() -> str:
+    return (os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY") or "").strip()
+
+
+MODEL_NAME = "gemini-3.1-flash-lite"
+
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-google_api_key = os.getenv('GOOGLE_API_KEY')
+google_api_key = _api_key()
+if not google_api_key:
+    raise RuntimeError(
+        "Missing GOOGLE_API_KEY. Add it to your Streamlit app secrets "
+        "(Settings → Secrets) or as an environment variable."
+    )
 gemini = OpenAI(base_url=GEMINI_BASE_URL, api_key=google_api_key)
 
 system = [{"role": "system", "content": TWIN_SYSTEM_PROMPT}]
