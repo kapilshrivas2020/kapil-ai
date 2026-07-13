@@ -77,8 +77,8 @@ def run_streamlit():
         """,
         unsafe_allow_html=True,
     )
-    st.title("Kapil Twin AI")
-    st.caption("Talk to my AI twin about me")
+    st.title(" Kapil Twin AI ")
+    st.caption(" Talk to my AI twin about me ")
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -105,7 +105,6 @@ def run_streamlit():
 def run_gradio():
     gr.ChatInterface(
         chat,
-        examples=EXAMPLES,
         title="Kapil Twin AI",
         description="Talk to my AI twin about me",
         chatbot=gr.Chatbot(show_label=False),
