@@ -1,40 +1,52 @@
 import json
 import os
-# import requests
+import re
+
+import requests
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-# pushover_user = os.getenv("PUSHOVER_USER")
-# pushover_token = os.getenv("PUSHOVER_TOKEN")
+_docs_service = None
 
-# pushover_url = "https://api.pushover.net/1/messages.json"
+def _append_via_apps_script(webhook_env_key: str, message: str) -> None:
+    webhook_url = os.getenv(webhook_env_key)
+    if not webhook_url:
+        raise RuntimeError(f"Missing {webhook_env_key}")
+
+    payload = {"message": message}
+    secret = os.getenv("GOOGLE_APPS_SCRIPT_SECRET")
+    if secret:
+        payload["secret"] = secret
+
+    response = requests.post(webhook_url, json=payload, timeout=30)
+    response.raise_for_status()
+    print(f"message written successfuly : {response}")
 
 
-# def push(text):
-#     requests.post(
-#         pushover_url,
-#         data={
-#             "token": pushover_token,
-#             "user": pushover_user,
-#             "message": text,
-#         },
-#     )
-
+def _append_message(doc_env_key: str, webhook_env_key: str, message: str) -> None:
+    if os.getenv(webhook_env_key):
+        _append_via_apps_script(webhook_env_key, message)
+    else:
+        print("Not able to push message")
 
 
 def pushQuestions(message):
-    print(f"Message pushed to record : {message}")
-    with open("qa_details.txt", "a", encoding="utf-8") as f:
-        f.write(message + "\n")
+    print(f"Message pushed to record : {message}", flush=True)
+    try:
+        _append_message("GOOGLE_QA_DOC_ID", "GOOGLE_QA_WEBHOOK_URL", message)
+    except Exception as exc:
+        print(f"Failed to write to Google Doc: {exc}", flush=True)
     return "Message received"
+
 
 def pushDetails(message):
-    print(f"Message pushed to record : {message}")
-    with open("user_details.txt", "a", encoding="utf-8") as f:
-        f.write(message + "\n")
+    print(f"Message pushed to record : {message}", flush=True)
+    try:
+        _append_message("GOOGLE_USER_DETAILS_DOC_ID", "GOOGLE_USER_DETAILS_WEBHOOK_URL", message)
+    except Exception as exc:
+        print(f"Failed to write to Google Doc: {exc}", flush=True)
     return "Message received"
-
 
 # def record_user_details(email, name="Name not provided", notes="not provided"):
 #     push(f"Recording interest from {name} with email {email} and notes {notes}")
